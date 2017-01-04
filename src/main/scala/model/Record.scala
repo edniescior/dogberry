@@ -16,7 +16,7 @@ import model.DRecord.DValue
   * @param values A sequence representing the fields in the record. The fields are in the format
   *               of a tuple (Attribute, Value)
   *
-  * Created by eniesc200 on 11/23/16.
+  * Created by edniescior on 11/23/16.
   */
 case class DRecord(id: String,
                    entity: String,

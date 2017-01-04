@@ -9,7 +9,7 @@ import org.scalatest.junit.JUnitRunner
 
 /**
   * Unit tests for the Record and Checksum algorithms.
-  * Created by eniesc200 on 12/7/16.
+  * Created by edniescior on 12/7/16.
   */
 @RunWith(classOf[JUnitRunner])
 class RecordSuite extends FunSuite {

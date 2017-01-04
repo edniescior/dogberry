@@ -7,6 +7,7 @@
 *.o
 *.so
 *.html
+*.sc
 
 # Packages #
 ############
@@ -35,6 +36,7 @@
 # SBT files #
 ######################
 target/
+project/
 .idea/
 .project
 /bin/

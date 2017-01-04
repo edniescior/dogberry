@@ -7,7 +7,7 @@ import java.security.MessageDigest
   * This object encapsulates different common checksum algorithms. They all operate on a
   * sequence of DRecord fields to return a checksum value.
   *
-  * Created by eniesc200 on 12/19/16.
+  * Created by edniescior on 12/19/16.
   */
 object Checksum {
 

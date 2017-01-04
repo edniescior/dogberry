@@ -3,7 +3,7 @@ package database
 /**
   * A simplified interface to databases.
   *
-  * Created by eniesc200 on 11/24/16.
+  * Created by edniescior on 11/24/16.
   */
 object Database {
 
@@ -13,7 +13,7 @@ object Database {
   case class ResultSet(/*...*/)
 
   /**
-    * An encapsulation of connection pools and other information
+    * An encapsulation of connection pools and other information.
     */
   case class Connection(/*...*/)
 
@@ -41,7 +41,7 @@ object Database {
 
 }
 
-class Database {
+trait Database {
 
   import Database._
 
@@ -51,9 +51,9 @@ class Database {
     * @param server the connection string
     * @return the returned status: Connected on success; QueryFailed on failure
     */
-  def connect(server: String): Status = ???
+  def connect(server: String): Status
 
-  def disconnect(): Status = ???
+  def disconnect(): Status
 
-  def query(/*...*/): Status = ???
+  def query(/*...*/): Status
 }

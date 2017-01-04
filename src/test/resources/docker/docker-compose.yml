@@ -1,0 +1,7 @@
+dogberry-cassandra:
+  image: cassandra:3.9
+  ports:
+    - "32774:9042"
+  volumes:
+    - ${DOG_SRC_DIR}/main/resources/DDL:/resources_main
+    - ${DOG_SRC_DIR}/test/resources/DDL:/resources_test
