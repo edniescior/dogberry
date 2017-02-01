@@ -1,13 +1,5 @@
-CREATE KEYSPACE IF NOT EXISTS test WITH replication = {
-    'class': 'SimpleStrategy',
-    'replication_factor': '1'
-};
+CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1 };
+CREATE TABLE IF NOT EXISTS test.kv(key text PRIMARY KEY, value int);
 
-USE test;
-
-CREATE TABLE IF NOT EXISTS test.users (
-  userid text PRIMARY KEY,
-  first_name text,
-  last_name text,
-  epoch_val timestamp
-);
+INSERT INTO test.kv(key, value) VALUES ('key1', 1);
+INSERT INTO test.kv(key, value) VALUES ('key2', 2);

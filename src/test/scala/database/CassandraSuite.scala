@@ -5,6 +5,12 @@ import org.junit.runner.RunWith
 import org.scalatest.{FunSuite, Matchers}
 import org.scalatest.junit.JUnitRunner
 
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+
+import com.datastax.spark.connector._
+
 /**
   * Unit tests associated with connectivity to Cassandra.
   *
@@ -89,12 +95,36 @@ class CassandraSuite extends FunSuite with Matchers {
     disconnectStatus should be(Disconnected)
   }
 
+
+  /*
+   * Spark connectivity tests.
+   */
+  test("Load RDD from test Cassandra table using Spark SQL") {
+    val conf = new SparkConf(true)
+      .setMaster("local")
+      .setAppName("My Spark Test")
+      .set("spark.cassandra.connection.host", "0.0.0.0")
+      .set("spark.cassandra.connection.port", "32774")
+    val sc = new SparkContext(conf)
+    val rdd = sc.cassandraTable("test", "kv").where("key = ?", "key1")
+    rdd.first.get[String]("key") should ===("key1")
+    rdd.first.get[Int]("value") should ===(1)
+  }
+
+
   /*
    * Cassandra DML tests.
    */
 
   test("Inserting a record.") {
-    ???
+    val conf = new SparkConf(true)
+      .setMaster("local")
+      .setAppName("My Spark Test")
+      .set("spark.cassandra.connection.host", "0.0.0.0")
+      .set("spark.cassandra.connection.port", "32774")
+    val sc = new SparkContext(conf)
+    val test = sc.parallelize(Seq(("cat", 10), ("fox", 40)))
+    test.saveToCassandra("test", "kv", SomeColumns("key", "value"))
   }
 
   test("Updating a record.") {
