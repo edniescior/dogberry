@@ -1,5 +1,16 @@
-CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1 };
-CREATE TABLE IF NOT EXISTS test.kv(key text PRIMARY KEY, value int);
+CREATE KEYSPACE IF NOT EXISTS test WITH replication = {
+  'class': 'SimpleStrategy',
+  'replication_factor': '1'
+};
 
-INSERT INTO test.kv(key, value) VALUES ('key1', 1);
-INSERT INTO test.kv(key, value) VALUES ('key2', 2);
+USE test;
+
+DROP TABLE IF EXISTS test.eav;
+
+CREATE TABLE test.eav (
+   ent text,
+   attr text,
+   value text,
+   PRIMARY KEY (ent, attr)
+   ) WITH comment = 'This table models the (lamentably) common Entity-Attribute-Value (EAV) pattern.'
+   ;

@@ -48,7 +48,5 @@ project/
 .cache-main
 .cache-tests
 
-
-# Vagrant #
-######################
-.vagrant/
+# Temp/Scratch #
+tmp/

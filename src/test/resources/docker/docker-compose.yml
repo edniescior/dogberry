@@ -3,5 +3,5 @@ dogberry-cassandra:
   ports:
     - "32774:9042"
   volumes:
-    - ${DOG_SRC_DIR}/main/resources/DDL:/resources_main
-    - ${DOG_SRC_DIR}/test/resources/DDL:/resources_test
+    - ${DOG_SRC_DIR}/main/resources:/resources_main
+    - ${DOG_SRC_DIR}/test/resources:/resources_test
