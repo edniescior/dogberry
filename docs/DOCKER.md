@@ -7,19 +7,19 @@ These notes are written for running [Docker for Mac](https://www.docker.com/prod
 ```
 $ docker version
 Client:
- Version:      1.13.0
- API version:  1.25
- Go version:   go1.7.3
- Git commit:   49bf474
- Built:        Wed Jan 18 16:20:26 2017
+ Version:      1.13.1
+ API version:  1.26
+ Go version:   go1.7.5
+ Git commit:   092cba3
+ Built:        Wed Feb  8 08:47:51 2017
  OS/Arch:      darwin/amd64
 
 Server:
- Version:      1.13.0
- API version:  1.25 (minimum version 1.12)
- Go version:   go1.7.3
- Git commit:   49bf474
- Built:        Wed Jan 18 16:20:26 2017
+ Version:      1.13.1
+ API version:  1.26 (minimum version 1.12)
+ Go version:   go1.7.5
+ Git commit:   092cba3
+ Built:        Wed Feb  8 08:47:51 2017
  OS/Arch:      linux/amd64
  Experimental: true
  ```
@@ -79,13 +79,15 @@ $ docker exec -i -t docker_dogberry-cassandra_1 /bin/bash
 
 #### Seeding Cassandra with Test Data
 
-The raw test data set is a subset of the IMDB database and is available here: https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset.
+The raw test data set -- `src/test/resources/data/movie_metadata.csv` -- is a subset of the IMDB database and was downloaded from: https://www.kaggle.com/deepmatrix/imdb-5000-movie-dataset.
+
+You will first need to format this data into insert statements by executing the `testdata.MovieDataLoader` object. It will generate the CQL file below. The CQL file will truncate the tables first, so it may be executed multiple times without fear of data corruption.
 
 To load the test data:
 
 ```
 $ docker exec -i -t docker_dogberry-cassandra_1 cqlsh -f '/resources_test/data/insert_eav_test.cql'
 ```
-(Note: The `testdata.MovieDataLoader` object was used to create the above files.)
+Warning: Remember to run the create table scripts noted above first.
 
 ## Kafka

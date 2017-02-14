@@ -8,7 +8,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * A script to load the IMDB data taken from Kaggle (CSV) and transform it into CQL insert statements.
   * The target tables are be structured differently. One is in the EAV format; the other looks like
-  * a regular RDBMS table.
+  * a regular relational table.
   *
   * Beware. The paths are hard-coded. There's no error checking. This is just a utility object that won't be used
   * again unless we need to re-generate the test data files again.
@@ -86,8 +86,25 @@ object MovieDataLoader {
     fields.slice(0, i).mkString("\n") // slice to strip out the nulls
   }
 
+  /**
+    * Given a record, format it into a group of insert statements for a relational style table. Null
+    * values are filtered out, i.e. no explicit insert of 'null'.
+    * @param record a map representing a record where the key is the column heading.
+    * @return a map representing a record where the key is the column heading.
+    */
+  def formatToRelational(record: Map[String, String]): String = {
+    def isNumeric(str:String): Boolean = str.matches("[-+]?\\d+(\\.\\d+)?")
+    val filteredRecord = record.filter(r => r._2 != "")
+    val headers = filteredRecord.keys.mkString("(", ",", ")")
+    val escapedVals = filteredRecord.values.map(v => if (isNumeric(v)) v else "'" + v +"'")
+    val values = escapedVals.mkString("(", ",", ")")
+    s"INSERT INTO test.rel${headers} VALUES ${values};"
+  }
+
 
   def main(args: Array[String]): Unit = {
+    val rowLimit = 10000000;  // limit the num of rows output
+
     // load the source data
     val records = loadFile("./src/test/resources/data/movie_metadata.csv")
     println(s"Loaded ${records.size} records.")
@@ -95,13 +112,22 @@ object MovieDataLoader {
     val pw = new PrintWriter(new File("./src/test/resources/data/insert_eav_test.cql"), "UTF-8")
 
     // print the EAV data
-    pw.println("\n-- EAV Test Data --\n\nTRUNCATE TABLE test.eav;\n")
     var count = 0
-    for (record <- records if count <= 50000000) { // limit the num of rows if needed
+    pw.println("\n-- EAV Test Data --\n\nTRUNCATE TABLE test.eav;\n")
+    for (record <- records if count < rowLimit) {
       pw.println(formatToEAV(record))
       count = count + 1
     }
     println(s"Wrote ${count} EAV records.")
+
+    // print the relational data
+    count = 0
+    pw.println("\n-- Relational Test Data --\n\nTRUNCATE TABLE test.rel;\n")
+    for (record <- records if count < rowLimit) { // limit the num of rows if needed
+      pw.println(formatToRelational(record))
+      count = count + 1
+    }
+    println(s"Wrote ${count} relational records.")
 
     pw.close()
 
