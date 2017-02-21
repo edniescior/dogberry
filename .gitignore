@@ -8,6 +8,7 @@
 *.so
 *.html
 *.sc
+src/test/resources/data/*test.cql
 
 # Packages #
 ############

@@ -83,7 +83,7 @@ The raw test data set -- `src/test/resources/data/movie_metadata.csv` -- is a su
 
 You will first need to format this data into insert statements by executing the `testdata.MovieDataLoader` object. It will generate the CQL file below. The CQL file will truncate the tables first, so it may be executed multiple times without fear of data corruption.
 
-To load the test data:
+Once you have generated the CQL file, run this to load the test data:
 
 ```
 $ docker exec -i -t docker_dogberry-cassandra_1 cqlsh -f '/resources_test/data/insert_eav_test.cql'

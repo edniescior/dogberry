@@ -6,12 +6,12 @@ import scala._
 import scala.collection.mutable.ListBuffer
 
 /**
-  * A script to load the IMDB data taken from Kaggle (CSV) and transform it into CQL insert statements.
+  * A script to parse the IMDB data taken from Kaggle (CSV) and transform it into CQL insert statements.
   * The target tables are be structured differently. One is in the EAV format; the other looks like
   * a regular relational table.
   *
   * Beware. The paths are hard-coded. There's no error checking. This is just a utility object that won't be used
-  * again unless we need to re-generate the test data files again.
+  * again unless we need to re-generate the test data files.
   *
   * Created by edniescior on 2/3/17.
   */
@@ -26,14 +26,15 @@ object MovieDataLoader {
   def escape(inStr: String): String = {
     //val ESCAPE_CHARS = List("+", "-", "&&", "||", "!", "(", ")", "{", "}", "[", "]", "^", "~", "*", "?", ":")
     val ESCAPE_CHARS = List("{", "}")
+
     def escapeChar(str: String, chrs: List[String]): String = chrs match {
       case (Nil) => str
       case (c :: cs) => escapeChar(str.replace(c, "\\\\" + c), cs)
     }
 
     escapeChar(inStr.trim, ESCAPE_CHARS)
-      .replaceAll("'", "''")  // ' is escaped differently from the rest
-      .replaceAll("\\P{Print}", "")  // strip out non printable chars
+      .replaceAll("'", "''") // ' is escaped differently from the rest
+      .replaceAll("\\P{Print}", "") // strip out non printable chars
   }
 
   /**
@@ -52,7 +53,7 @@ object MovieDataLoader {
     var header = List[String]()
     val records = ListBuffer[Map[String, String]]()
     for ((line, count) <- bufferedSource.getLines.zipWithIndex) {
-      val cols = line.split(",").map(escape(_))
+      val cols = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1).map(escape(_))
 
       if (count == 0) {
         // deal with the header, adding the extra column headers we need
@@ -89,24 +90,32 @@ object MovieDataLoader {
   /**
     * Given a record, format it into a group of insert statements for a relational style table. Null
     * values are filtered out, i.e. no explicit insert of 'null'.
+    *
     * @param record a map representing a record where the key is the column heading.
     * @return a map representing a record where the key is the column heading.
     */
   def formatToRelational(record: Map[String, String]): String = {
-    def isNumeric(str:String): Boolean = str.matches("[-+]?\\d+(\\.\\d+)?")
+    def escNonNumeric(ky: String, vl: String): String =
+      if (vl.matches("[-+]?\\d+(\\.\\d+)?") && ky != "movie_title") vl // movie titles can be numeric e.g. '1984'
+      else "'" + vl + "'"
+
+    // filter out nulls
     val filteredRecord = record.filter(r => r._2 != "")
+    // escape strings
+    val escapedRecord = filteredRecord.foldLeft(Map[String, String]())((m, n) =>
+      m + (n._1 -> escNonNumeric(n._1, n._2.toString)))
     val headers = filteredRecord.keys.mkString("(", ",", ")")
-    val escapedVals = filteredRecord.values.map(v => if (isNumeric(v)) v else "'" + v +"'")
-    val values = escapedVals.mkString("(", ",", ")")
+    val values = escapedRecord.values.mkString("(", ",", ")")
     s"INSERT INTO test.rel${headers} VALUES ${values};"
   }
 
 
   def main(args: Array[String]): Unit = {
-    val rowLimit = 10000000;  // limit the num of rows output
+    val rowLimit = 100000000; // limit the num of rows output
 
     // load the source data
     val records = loadFile("./src/test/resources/data/movie_metadata.csv")
+    //val records = loadFile("./src/test/resources/data/test.dat")
     println(s"Loaded ${records.size} records.")
 
     val pw = new PrintWriter(new File("./src/test/resources/data/insert_eav_test.cql"), "UTF-8")
@@ -123,7 +132,7 @@ object MovieDataLoader {
     // print the relational data
     count = 0
     pw.println("\n-- Relational Test Data --\n\nTRUNCATE TABLE test.rel;\n")
-    for (record <- records if count < rowLimit) { // limit the num of rows if needed
+    for (record <- records if count < rowLimit) {
       pw.println(formatToRelational(record))
       count = count + 1
     }
