@@ -1,47 +1,53 @@
 package database
 
 /**
-  * Created by eniesc200 on 12/5/16.
+  * An abstraction for capturing SQL-like predicate (where) clauses. Right now it
+  * just handles "WHERE x op value" and "WHERE x IN" type constructs.
+  *
+  * Example usage:
+  *   val wheres = Seq(
+  *       WhereIn("title_year", "2010", "2011", "2012"),
+  *       WhereOp("language", EQ, "English"),
+  *       WhereOp("content_rating", EQ, "PG-13"),
+  *       WhereOp("gross", GT, 1000000))
+  *
+  * Created by edniescior on 3/31/17.
   */
-class Predicate {
+sealed trait Predicate
 
-
-}
-
-// Operators for WHERE clauses
+/**
+  * Operators for Where clauses.
+  */
 object Op extends Enumeration {
-type Op = Value
+  type Op = Value
 
-  val EQ   = Value("=")
-  val NE   = Value("!=")
+  val EQ = Value("=")
+  val NE = Value("!=")
   val LTGT = Value("<>")
-  val LT   = Value("<")
-  val LE   = Value("<=")
-  val GT   = Value(">")
-  val GE   = Value(">=")
+  val LT = Value("<")
+  val LE = Value("<=")
+  val GT = Value(">")
+  val GE = Value(">=")
 }
 import Op._
 
-// Represent a SQL "WHERE x op value" clause, where +op+ is a
-// comparison operator: =, !=, <>, <, <=, >, or >=.
-case class WhereOp[T](columnName: String, op: Op, value: T)
+/**
+  * Represents a SQL "WHERE x op value" clause where +op+ is a comparison
+  * operator: =, !=, <>, <, <=, >, or >=.
+  * @param columnName the name of the column to compare
+  * @param op the comparison operator
+  * @param value the value to compare
+  * @tparam T
+  */
+case class WhereOp[T](columnName: String, op: Op, value: T) extends Predicate
 
-// Represent a SQL "WHERE x IN (a, b, c, ...)" clause.
-case class WhereIn[T](columnName: String, val1: T, vals: T*)
+/**
+  * Represents a SQL "WHERE x IN (a, b, c,...)" clause.
+  * @param columnName the name of the column to compare
+  * @param val1 the value to compare
+  * @param vals more values.
+  * @tparam T
+  */
+case class WhereIn[T](columnName: String, val1: T, vals: T*) extends Predicate
 
-//  Example usage
-//val wheres = Seq(                                                    // <4>
-//WhereIn("state", "IL", "CA", "VA"),
-//WhereOp("state", EQ, "IL"),
-//WhereOp("name", EQ, "Buck Trends"),
-//WhereOp("age", GT, 29))
-//
-//for (where <- wheres) {
-//  where match {
-//  case WhereIn(col, val1, vals @ _*) =>                            // <5>
-//  val valStr = (val1 +: vals).mkString(", ")
-//  println (s"WHERE $col IN ($valStr)")
-//  case WhereOp(col, op, value) => println (s"WHERE $col $op $value")
-//  case _ => println (s"ERROR: Unknown expression: $where")
-//}
-//}
+

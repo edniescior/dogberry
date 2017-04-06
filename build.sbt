@@ -19,6 +19,11 @@ libraryDependencies += "com.datastax.spark" % "spark-cassandra-connector_2.11" %
 // https://mvnrepository.com/artifact/org.apache.spark/spark-sql_2.11
 libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.0.2" withSources() withJavadoc()
 
+// https://mvnrepository.com/artifact/com.typesafe.play/play-json_2.11
+libraryDependencies += "com.typesafe.play" % "play-json_2.11" % "2.6.0-M4"
+libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.8.7"
+
+
 
 
     

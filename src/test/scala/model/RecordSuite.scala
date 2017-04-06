@@ -16,11 +16,20 @@ class RecordSuite extends FunSuite {
 
   trait TestRecords {
     val values1 = List((NilAttribute, "first"), (NilAttribute, "second"), (StringAttribute("THIRD"), "third"))
+    val values2 = List((NilAttribute, "first"), (NilAttribute, "second"), (NilAttribute, "third"))
+    val values3 = List((StringAttribute("DODO"), "dodo"), (StringAttribute("RE"), "re1st"),
+      (StringAttribute("ME"), "meme"), (StringAttribute("RE"), "re2nd"), (StringAttribute("FA"), "fa"),
+      (StringAttribute("DO"), "do"))
 
     val rec1 = DRecord(id = "id record 1", entity = "entity A", values = Seq.empty[DValue])
     val rec2 = DRecord(id = "id record 2", entity = "entity B", values = Seq.empty[DValue])
     val rec3 = DRecord(id = "id record 3", entity = "entity C", created = Some(45599999L),
       updated = Some(345679L), action = Some(Insert), values = values1)
+    val rec4 = DRecord(id = "id record 4", entity = "entity D", created = Some(45599998L),
+      updated = Some(345678L), action = Some(Update), values = values2)
+    val rec5 = DRecord(id = "id record 5", entity = "entity e", created = Some(45599997L),
+      updated = Some(345677L), action = Some(Update), values = values3)
+
   }
 
   test("constructors working as expected") {
@@ -48,6 +57,99 @@ class RecordSuite extends FunSuite {
     }
   }
 
+  test("builder apply with id, entity, and collection of values with no created or updated set") {
+    val fields = List(("color","Color"), ("director_name","Jem Cohen"), ("num_critic_for_reviews","12"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "created", updatedAttrLabel = "updated")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created should be(None)
+    rec0.updated should be(None)
+    rec0.action should be(None)
+    rec0.values should have size 3
+  }
+
+  test("builder apply with id, entity, and collection of values with created and updated set") {
+    val fields = List(("color","Color"), ("director_name","Jem Cohen"), ("created","10909099"),
+      ("num_critic_for_reviews","12"), ("updated","589393848"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "created", updatedAttrLabel = "updated")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created.get === (10909099L)
+    rec0.updated.get === (589393848L)
+    rec0.action should be(None)
+    rec0.values should have size 5
+  }
+
+  test("builder apply with id, entity, and collection of values with just created set") {
+    val fields = List(("color","Color"), ("director_name","Jem Cohen"), ("created","10909099"),
+      ("num_critic_for_reviews","12"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "created", updatedAttrLabel = "updated")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created.get === (10909099L)
+    rec0.updated should be(None)
+    rec0.action should be(None)
+    rec0.values should have size 4
+  }
+
+  test("builder apply with id, entity, and collection of values with just updated set") {
+    val fields = List(("color","Color"), ("director_name","Jem Cohen"),
+      ("num_critic_for_reviews","12"), ("updated","589393848"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "created", updatedAttrLabel = "updated")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created should be(None)
+    rec0.updated.get === (589393848L)
+    rec0.action should be(None)
+    rec0.values should have size 4
+  }
+
+  test("builder apply with id, entity, and collection of values with created as non-numeric") {
+    val fields = List(("color","Color"), ("director_name","Jem Cohen"), ("created", "349880K877"),
+      ("num_critic_for_reviews","12"), ("updated","589393848"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "created", updatedAttrLabel = "updated")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created should be(None)
+    rec0.updated.get === (589393848L)
+    rec0.action should be(None)
+    rec0.values should have size 5
+  }
+
+  test("builder apply with passing in unknown attribute labels for created and updated") {
+    val fields = List(("color","Color"), ("director_name","Jem Cohen"), ("created","10909099"),
+      ("num_critic_for_reviews","12"), ("updated","589393848"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "bob", updatedAttrLabel = "UPDATED")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created should be(None)
+    rec0.updated should be(None)
+    rec0.action should be(None)
+    rec0.values should have size 5
+  }
+
+  test("builder apply with passing in a field that has an attribute, but empty value") {
+    val fields = List(("color","Color"), ("director_name", ""), ("created","10909099"),
+      ("num_critic_for_reviews","12"), ("updated","589393848"))
+    val rec0 = DRecord(id = "dRec", entity = "Foo", fields = fields,
+      createdAttrLabel = "created", updatedAttrLabel = "updated")
+    rec0.id should === ("dRec")
+    rec0.entity should === ("Foo")
+    rec0.created.get === (10909099L)
+    rec0.updated.get === (589393848L)
+    rec0.action should be(None)
+    rec0.values should have size 5
+  }
+
+  /*
+   * Test Checksum call
+   */
   test("calling the concatenate checksum on an empty values list returns an empty string") {
     new TestRecords {
       rec1.checksum(catChecksum) should ===("")
@@ -95,6 +197,63 @@ class RecordSuite extends FunSuite {
   test("calling the SHA256 checksum on a list of values returns the expected result") {
     new TestRecords {
       rec3.checksum(sha256Checksum) should ===("e3d4c0477520a72cc8b8964a863330c8558c8e436b58386829bec0f9f2723241")
+    }
+  }
+
+  /*
+   * Test get values.
+   */
+  test("calling getValue with an empty string return None") {
+    new TestRecords {
+      rec3.getValueByAttribute(StringAttribute("")) shouldBe None
+    }
+  }
+
+  test("calling getValue against an empty values collection returns None") {
+    new TestRecords {
+      rec1.getValueByAttribute(StringAttribute("THIRD")) shouldBe None
+    }
+  }
+
+  test("calling getValue against values with only NilAttributes returns None") {
+    new TestRecords {
+      rec4.getValueByAttribute(StringAttribute("THIRD")) shouldBe None
+    }
+  }
+
+  test("calling getValue against values where there is no match returns None") {
+    new TestRecords {
+      rec3.getValueByAttribute(StringAttribute("FOO")) shouldBe None
+    }
+  }
+
+  test("call getValue against values with multiple matches will return the first occurrence") {
+    new TestRecords {
+      val res = rec5.getValueByAttribute(StringAttribute("RE"))
+      val (attr: StringAttribute, value) = res.get
+      res shouldBe defined
+      attr.label === "RE"
+      value === "re1st"
+    }
+  }
+
+  test("call getValue against values with a single match will return the correct value") {
+    new TestRecords {
+      val res = rec5.getValueByAttribute(StringAttribute("FA"))
+      val (attr: StringAttribute, value) = res.get
+      res shouldBe defined
+      attr.label === "FA"
+      value === "fa"
+    }
+  }
+
+  test("call getValue for exact match of an attribute") {
+    new TestRecords {
+      val res = rec5.getValueByAttribute(StringAttribute("DO"))
+      val (attr: StringAttribute, value) = res.get
+      res shouldBe defined
+      attr.label === "DO"
+      value === "do"
     }
   }
 }
