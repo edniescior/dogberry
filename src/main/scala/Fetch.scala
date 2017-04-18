@@ -1,17 +1,20 @@
+import java.text.SimpleDateFormat
+import java.util.Calendar
+
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.rdd.RDD
-import com.datastax.spark.connector._
 import java.util.UUID.randomUUID
 
+import com.typesafe.scalalogging.LazyLogging
 import database.{CassandraSparkDatabase, Op, WhereOp}
-import model.{DRecord, StringAttribute}
+import model.DRecord
+import org.apache.hadoop.io.compress.GzipCodec
 import serde.JsonSerializer
 
 
 /**
   * Created by edniescior on 2/28/17.
   */
-object Fetch {
+object Fetch extends LazyLogging {
 
 
   def main(args: Array[String]): Unit = {
@@ -26,28 +29,36 @@ object Fetch {
     val sc = new SparkContext(conf)
 
     /* Fetch the data */
+    logger.info("Executing query")
     val res = CassandraSparkDatabase.queryEAVTable(sc, "test", "eav",
       keyColumn = "ent",
       attrColumn = "attr",
       valColumn = "value",
       predicates = Seq(WhereOp("ent", Op.EQ, "1683")))
-    res.foreach(println(_))
-    println("Fetched records")
+    logger.info("Query complete")
+    //res.foreach(println(_))
 
     /* Convert into an RDD of DRecord objects - use the default values for created and updated field names. */
     val dRec = res.map((row) => DRecord(id = row._1, entity = "EAV", fields = row._2,
       createdAttrLabel = "created", updatedAttrLabel = "updated"))
+    logger.info("DRecords created")
     //dRec foreach(println(_))
 
     /* Convert to JSON */
     val dRecJson = dRec map (JsonSerializer.toJson(_))
+    logger.info("DRecords serialized")
+    //dRecJson foreach (println(_))
 
     /* Write out to file */
-    dRecJson foreach (println(_))
+    val dateFormat = new SimpleDateFormat("yyyyMMddHHmmss")
+    val dateStamp = dateFormat.format(Calendar.getInstance().getTime)
+    val outputPath = "/Users/eniesc200/Work/repos/dogberry/tmp/" + dateStamp
+
+    logger.info("Writing to " + outputPath)
+    dRecJson.saveAsTextFile(outputPath, classOf[GzipCodec])
+    logger.info("Write complete")
 
     sc.stop()
 
   }
-
-
 }

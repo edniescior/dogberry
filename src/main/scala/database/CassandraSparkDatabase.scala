@@ -6,6 +6,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
 import com.datastax.spark.connector._
 import com.datastax.spark.connector.rdd.CassandraRDD
+import com.typesafe.scalalogging.LazyLogging
 
 /**
   * Implements functions for querying Cassandra tables using Spark. Both
@@ -23,7 +24,8 @@ import com.datastax.spark.connector.rdd.CassandraRDD
   *
   * Created by edniescior on 3/24/17.
   */
-object CassandraSparkDatabase {
+object CassandraSparkDatabase extends LazyLogging {
+
 
   /**
     * Converts an Iterable[CassandraRow] returned by the Spark-Cassandra driver into a
@@ -91,6 +93,9 @@ object CassandraSparkDatabase {
     require(table != null, "table cannot be null in CassandraSparkDatabase.queryTable")
     require(keyColumn != null, "keyColumn cannot be null in CassandraSparkDatabase.queryTable")
 
+    logger.info(s"Query on $keySpace.$table with keyColumn $keyColumn selecting $columns " +
+      s"with predicates $predicates.")
+
     /* apply selects */
     def applySelects(cs: Seq[String],
                      rdd: CassandraRDD[CassandraRow]): CassandraRDD[CassandraRow] = cs match {
@@ -150,6 +155,9 @@ object CassandraSparkDatabase {
                     predicates: Seq[Predicate] = Seq.empty): RDD[(String, Seq[(String, String)])] = {
     require(attrColumn != null, "attrColumn cannot be null in CassandraSparkDatabase.queryEAVTable")
     require(valColumn != null, "valColumn cannot be null in CassandraSparkDatabase.queryEAVTable")
+
+    logger.info(s"Query EAV on $keySpace.$table with keyColumn $keyColumn, attribute column $attrColumn " +
+      s"and value column $valColumn with predicates $predicates.")
 
     /**
       * Converts an Iterable[CassandraRow] returned by the Spark-Cassandra driver into a

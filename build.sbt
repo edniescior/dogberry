@@ -10,6 +10,11 @@ libraryDependencies += "org.scalactic" % "scalactic_2.11" % "3.0.1"
 // https://mvnrepository.com/artifact/org.scalatest/scalatest_2.11
 libraryDependencies += "org.scalatest" % "scalatest_2.11" % "3.0.1"
 
+// https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
+// https://mvnrepository.com/artifact/com.typesafe.scala-logging/scala-logging_2.11
+libraryDependencies += "com.typesafe.scala-logging" % "scala-logging_2.11" % "3.5.0"
+
 
 // https://mvnrepository.com/artifact/org.apache.spark/spark-core_2.11
 libraryDependencies += "org.apache.spark" % "spark-core_2.11" % "2.0.2"
@@ -22,6 +27,7 @@ libraryDependencies += "org.apache.spark" % "spark-sql_2.11" % "2.0.2" withSourc
 // https://mvnrepository.com/artifact/com.typesafe.play/play-json_2.11
 libraryDependencies += "com.typesafe.play" % "play-json_2.11" % "2.6.0-M4"
 libraryDependencies += "com.fasterxml.jackson.module" % "jackson-module-scala_2.11" % "2.8.7"
+
 
 
 
